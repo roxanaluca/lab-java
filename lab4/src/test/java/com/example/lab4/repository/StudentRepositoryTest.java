@@ -1,6 +1,8 @@
 package com.example.lab4.repository;
 
 import com.example.lab4.entity.Student;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,8 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         "spring.kafka.admin.auto-create=false",
         "spring.kafka.admin.fail-fast=false",
         "spring.kafka.bootstrap-servers=localhost:0",
-        "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.flyway.enabled=true",
+        "spring.flyway.locations=classpath:db/migration",
+        "spring.jpa.hibernate.ddl-auto=none",
         "app.cqrs.init=false",
         "quickgrade.connect=false"
 })
@@ -51,12 +54,21 @@ class StudentRepositoryTest {
         registry.add("spring.kafka.admin.auto-create", () -> "false");
         registry.add("spring.kafka.admin.fail-fast", () -> "false");
         registry.add("spring.kafka.bootstrap-servers", () -> "localhost:0");
-        registry.add("spring.flyway.enabled", () -> "false");
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.flyway.enabled", () -> "true");
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
     }
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private Flyway flyway;
+
+    @BeforeEach
+    void migrateSchema() {
+        flyway.migrate();
+    }
 
     @Test
     void repositoryCrudWorksWithMigrationSchema() {
