@@ -1,0 +1,95 @@
+# Prometheus Alert Rules for Lab 9
+groups:
+  - name: application_alerts
+    rules:
+      # Memory usage alert - triggers when JVM memory exceeds 80% of max
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected on {{ $labels.application }}"
+          description: "JVM heap memory usage is above 80% (current: {{ printf \"%.2f\" $value }}%)"
+
+      # Critical memory usage - triggers when memory exceeds 90%
+      - alert: CriticalMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.9
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage on {{ $labels.application }}"
+          description: "JVM heap memory usage is above 90% (current: {{ printf \"%.2f\" $value }}%)"
+
+      # High response time for StableMatch solve operations
+      - alert: HighSolveResponseTime
+        expr: rate(stablematch_solve_time_seconds_sum[5m]) / rate(stablematch_solve_time_seconds_count[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time for StableMatch solve"
+          description: "Average solve time is above 5 seconds (current: {{ printf \"%.2f\" $value }}s)"
+
+      # Service down alert
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) / rate(http_server_requests_seconds_count[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 10% (current: {{ printf \"%.2f\" $value }}%)"
+
+      # Circuit breaker open alert
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is open"
+          description: "Circuit breaker has opened due to failures"
+
+      # Rate limiter exceeded
+      - alert: RateLimiterExceeded
+        expr: increase(resilience4j_ratelimiter_available_permissions[1m]) == 0
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: "Rate limiter {{ $labels.name }} is exhausted"
+          description: "Rate limiter has no available permissions"
+
+  - name: infrastructure_alerts
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: process_cpu_usage > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.application }}"
+          description: "CPU usage is above 80% (current: {{ printf \"%.2f\" $value }}%)"
+
+      # Too many open file descriptors
+      - alert: HighFileDescriptors
+        expr: process_files_open_files / process_files_max_files > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High file descriptor usage on {{ $labels.application }}"
+          description: "File descriptor usage is above 80%"

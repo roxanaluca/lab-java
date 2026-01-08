@@ -1,0 +1,107 @@
+# API Gateway Configuration
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: false
+      routes:
+        # Route to StableMatch service
+        - id: stablematch-service
+          uri: lb://LAB8
+          predicates:
+            - Path=/api/matching/**
+
+        # Route to PrefSchedule service
+        - id: prefschedule-service
+          uri: lb://LAB4
+          predicates:
+            - Path=/api/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: prefScheduleCircuitBreaker
+                fallbackUri: forward:/fallback/prefschedule
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Direct routes (when Eureka is disabled)
+        - id: stablematch-direct
+          uri: http://localhost:9095
+          predicates:
+            - Path=/direct/matching/**
+          filters:
+            - RewritePath=/direct/(?<segment>.*), /api/$\{segment}
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: stableMatchDirectCircuitBreaker
+
+        - id: prefschedule-direct
+          uri: http://localhost:8899
+          predicates:
+            - Path=/direct/**
+          filters:
+            - RewritePath=/direct/(?<segment>.*), /api/$\{segment}
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: prefScheduleDirectCircuitBreaker
+
+server:
+  port: 8000
+
+# Eureka Client Configuration
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:false}
+    service-url:
+      defaultZone: ${EUREKA_SERVER:http://localhost:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Resilience4j Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+    instances:
+      stableMatchCircuitBreaker:
+        baseConfig: default
+      prefScheduleCircuitBreaker:
+        baseConfig: default
+      stableMatchDirectCircuitBreaker:
+        baseConfig: default
+      prefScheduleDirectCircuitBreaker:
+        baseConfig: default
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
