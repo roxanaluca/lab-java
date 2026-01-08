@@ -19,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         "spring.config.import=",
         "spring.cloud.config.enabled=false",
         "spring.kafka.listener.auto-startup=false",
+        "spring.kafka.admin.auto-create=false",
+        "spring.kafka.admin.fail-fast=false",
+        "spring.kafka.bootstrap-servers=localhost:0",
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "app.cqrs.init=false",
@@ -42,6 +45,9 @@ class StudentRepositoryTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
         registry.add("spring.config.import", () -> "");
+        registry.add("spring.kafka.admin.auto-create", () -> "false");
+        registry.add("spring.kafka.admin.fail-fast", () -> "false");
+        registry.add("spring.kafka.bootstrap-servers", () -> "localhost:0");
         registry.add("spring.flyway.enabled", () -> "false");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
