@@ -15,7 +15,7 @@ spec:
       containers:
         - name: lab4-app
           image: ghcr.io/roxanaluca/lab-java:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8899
           envFrom:
