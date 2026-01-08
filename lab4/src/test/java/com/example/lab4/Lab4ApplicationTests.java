@@ -11,6 +11,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(properties = {
         "spring.config.import=",
         "spring.cloud.config.enabled=false",
+        "spring.cloud.discovery.enabled=false",
+        "spring.cloud.service-registry.auto-registration.enabled=false",
+        "eureka.client.enabled=false",
         "spring.kafka.listener.auto-startup=false",
         "spring.kafka.admin.auto-create=false",
         "spring.kafka.admin.fail-fast=false",
