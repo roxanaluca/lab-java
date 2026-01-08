@@ -41,8 +41,14 @@ public class CSVGradeService {
     @Value("${quickgrade.base-url}")
     private String quickGradeWsUrl;
 
+    @Value("${quickgrade.connect:true}")
+    private boolean connectOnStartup;
+
     @PostConstruct
     public void connect() throws Exception {
+        if (!connectOnStartup) {
+            return;
+        }
         var future = stompClient.connectAsync(quickGradeWsUrl, new StompSessionHandlerAdapter() {
             @Override
             public void afterConnected(StompSession session, StompHeaders headers) {

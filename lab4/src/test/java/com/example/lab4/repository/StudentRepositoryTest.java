@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         "spring.kafka.listener.auto-startup=false",
         "spring.flyway.enabled=true",
         "spring.jpa.hibernate.ddl-auto=none",
-        "app.cqrs.init=false"
+        "app.cqrs.init=false",
+        "quickgrade.connect=false"
 })
 @Testcontainers(disabledWithoutDocker = true)
 class StudentRepositoryTest {
