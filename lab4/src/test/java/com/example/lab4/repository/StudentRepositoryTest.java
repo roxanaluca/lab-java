@@ -16,8 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(properties = {
         "spring.config.import=",
+        "spring.cloud.config.enabled=false",
+        "spring.kafka.listener.auto-startup=false",
         "spring.flyway.enabled=true",
-        "spring.jpa.hibernate.ddl-auto=validate"
+        "spring.jpa.hibernate.ddl-auto=none"
 })
 @Testcontainers(disabledWithoutDocker = true)
 class StudentRepositoryTest {
@@ -38,7 +40,7 @@ class StudentRepositoryTest {
         registry.add("spring.config.import", () -> "");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
     }
 
     @Autowired
