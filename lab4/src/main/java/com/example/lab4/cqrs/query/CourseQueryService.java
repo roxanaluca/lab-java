@@ -5,6 +5,7 @@ import com.example.lab4.entity.Course;
 import com.example.lab4.repository.CourseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -23,10 +24,14 @@ public class CourseQueryService {
 
     private final CourseReadModelStore readModelStore;
     private final CourseRepository courseRepository;
+    private final boolean initReadModel;
 
-    public CourseQueryService(CourseReadModelStore readModelStore, CourseRepository courseRepository) {
+    public CourseQueryService(CourseReadModelStore readModelStore,
+                              CourseRepository courseRepository,
+                              @Value("${app.cqrs.init:true}") boolean initReadModel) {
         this.readModelStore = readModelStore;
         this.courseRepository = courseRepository;
+        this.initReadModel = initReadModel;
     }
 
     /**
@@ -34,6 +39,10 @@ public class CourseQueryService {
      */
     @PostConstruct
     public void initializeReadModel() {
+        if (!initReadModel) {
+            logger.info("Skipping CQRS read model initialization (app.cqrs.init=false)");
+            return;
+        }
         logger.info("Initializing CQRS read model from database...");
 
         List<Course> allCourses = courseRepository.findAllWithStudents();

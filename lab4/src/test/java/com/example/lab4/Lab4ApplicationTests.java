@@ -13,7 +13,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         "spring.cloud.config.enabled=false",
         "spring.kafka.listener.auto-startup=false",
         "spring.flyway.enabled=true",
-        "spring.jpa.hibernate.ddl-auto=none"
+        "spring.jpa.hibernate.ddl-auto=none",
+        "app.cqrs.init=false"
 })
 @Testcontainers(disabledWithoutDocker = true)
 class Lab4ApplicationTests {
