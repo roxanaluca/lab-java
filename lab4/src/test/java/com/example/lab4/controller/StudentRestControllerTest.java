@@ -3,13 +3,15 @@ package com.example.lab4.controller;
 import com.example.lab4.dto.StudentDetailDto;
 import com.example.lab4.errors.StudentNotFound;
 import com.example.lab4.service.StudentService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,14 +20,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = StudentRestController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(GlobalExceptionHandler.class)
 class StudentRestControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private StudentService studentService;
+
+    @BeforeEach
+    void setUp() {
+        studentService = Mockito.mock(StudentService.class);
+        StudentRestController controller = new StudentRestController();
+        ReflectionTestUtils.setField(controller, "studentService", studentService);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
 
     @Test
     void getStudent_returnsDetails() throws Exception {
