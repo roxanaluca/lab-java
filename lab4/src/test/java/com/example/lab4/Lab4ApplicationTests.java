@@ -12,8 +12,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         "spring.config.import=",
         "spring.cloud.config.enabled=false",
         "spring.kafka.listener.auto-startup=false",
-        "spring.flyway.enabled=true",
-        "spring.jpa.hibernate.ddl-auto=none",
+        "spring.flyway.enabled=false",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
         "app.cqrs.init=false",
         "quickgrade.connect=false"
 })
@@ -34,9 +34,8 @@ class Lab4ApplicationTests {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
         registry.add("spring.config.import", () -> "");
-        registry.add("spring.flyway.enabled", () -> "true");
-        registry.add("spring.flyway.locations", () -> "classpath:db/migration");
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        registry.add("spring.flyway.enabled", () -> "false");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
 
     @Test
