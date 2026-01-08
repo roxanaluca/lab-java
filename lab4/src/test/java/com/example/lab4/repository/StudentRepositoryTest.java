@@ -3,8 +3,7 @@ package com.example.lab4.repository;
 import com.example.lab4.entity.Student;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -15,9 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@DataJpaTest
-@Testcontainers
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(properties = {
+        "spring.config.import=",
+        "spring.flyway.enabled=true",
+        "spring.jpa.hibernate.ddl-auto=validate"
+})
+@Testcontainers(disabledWithoutDocker = true)
 class StudentRepositoryTest {
 
     @Container
@@ -28,10 +30,12 @@ class StudentRepositoryTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.url", () ->
+                String.format("jdbc:postgresql://%s:%d", postgres.getHost(), postgres.getFirstMappedPort()));
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
+        registry.add("spring.config.import", () -> "");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
