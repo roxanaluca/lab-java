@@ -13,6 +13,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.sql.DataSource;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -63,11 +65,15 @@ class StudentRepositoryTest {
     private StudentRepository studentRepository;
 
     @Autowired
-    private Flyway flyway;
+    private DataSource dataSource;
 
     @BeforeEach
     void migrateSchema() {
-        flyway.migrate();
+        Flyway.configure()
+                .dataSource(dataSource)
+                .locations("classpath:db/migration")
+                .load()
+                .migrate();
     }
 
     @Test
